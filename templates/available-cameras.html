@@ -1,0 +1,9 @@
+<div class="flex gap-2">
+{% for device_id in data.device_ids %}
+    <div class="bg-white shadow-xl rounded p-1 w-1/2">
+        <div class="text-sm font-medium mb-2">Device ID: {{ device_id }}</div>
+        <img src="{{ url_for('api.content.device_preview', device_id=device_id) }}"
+        alt="Camera {{ device_id }}"/>
+    </div>
+{% endfor %}
+</div>

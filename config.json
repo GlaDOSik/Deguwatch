@@ -1,0 +1,4 @@
+{
+  "db_connection_string": "postgresql://localhost:5432/deguwatch?user=postgres&password=1234",
+  "shot_images_path": "/home/ludek/ProjectData/Deguwatch"
+}
