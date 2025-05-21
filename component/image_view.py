@@ -9,5 +9,7 @@ class ImageView(GuiComponent):
     def get_template_path(self) -> str:
         return "image-view.html"
 
-    def set_image(self, image: Image):
-        self.component_data["image"] = image
+    def set_images(self, prev_image: Image, current_image: Image, next_image: Image):
+        self.component_data["prev_image"] = prev_image
+        self.component_data["image"] = current_image
+        self.component_data["next_image"] = next_image

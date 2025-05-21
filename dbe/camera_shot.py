@@ -17,11 +17,7 @@ class CameraShot(Base):
     device_id: Mapped[Optional[int]]
     shot_frequency_sec: Mapped[Optional[int]]
     insert_timestamp: Mapped[bool] = mapped_column(default=False)
-    images: Mapped[List[Image]] = relationship(passive_deletes=True)
-
-    def get_first_image(self):
-        return self.images[0]
-
+    # images: Mapped[List[Image]] = relationship(passive_deletes=True)
 
 
 def get_all(session: Session):

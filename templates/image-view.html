@@ -1,5 +1,12 @@
 <div class="flex flex-col">
-    <div></div>
-    <img src="{{ url_for('api.content.camera_shot_image', image_id=data.image.id) }}"
-        alt="Image from camera"/>
+    <div>
+        <i class="bi bi-house-fill icon" onclick="openDashboard();"></i>
+        {% if data.prev_image %}
+        <i class="bi bi-arrow-left-circle-fill icon" onclick="openImageView('{{data.prev_image.id}}');"></i>
+        {% endif %}
+        {% if data.next_image %}
+        <i class="bi bi-arrow-right-circle-fill icon" onclick="openImageView('{{data.next_image.id}}');"></i>
+        {% endif %}
+    </div>
+    <img src="{{ url_for('api.content.camera_shot_image', image_id=data.image.id) }}" alt="Image from camera"/>
 </div>

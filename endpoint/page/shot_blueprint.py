@@ -5,6 +5,8 @@ from component.shot_livestream import ShotLivestream
 from vial.gui.component.common.root_component import Root
 from dbe import camera_shot
 from dbe.image import find_by_id as find_image_by_id
+from dbe.image import find_next as find_next_image
+from dbe.image import find_previous as find_previous_image
 
 shot_blueprint = Blueprint("shot", __name__, url_prefix="/shot")
 
@@ -37,9 +39,11 @@ def get_shot_image(image_id):
     transaction_session = getattr(g, "transaction_session", None)
 
     image = find_image_by_id(transaction_session, image_id)
+    next_image = find_next_image(transaction_session, image.camera_shot_id, image.timestamp)
+    previous_image = find_previous_image(transaction_session, image.camera_shot_id, image.timestamp)
 
     image_view = ImageView(IMAGE_VIEW_ID)
-    image_view.set_image(image)
+    image_view.set_images(previous_image, image, next_image)
 
     root = (Root(None)
             .add_content(image_view)

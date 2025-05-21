@@ -16,7 +16,7 @@ class SharedCamera:
             if ret:
                 with self.lock:
                     self.frame = frame
-            time.sleep(1)  # Prevent CPU overuse
+            time.sleep(0.01)  # Prevent CPU overuse
 
     def get_frame(self):
         with self.lock:

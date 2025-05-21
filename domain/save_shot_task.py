@@ -41,3 +41,4 @@ class SaveShotTask:
     def start(self):
         self.scheduler.add_job(self.tick, "interval", seconds=self.frequency_sec)
         self.scheduler.start()
+        print(f"Shot scheduler started cs-id={self.camera_shot_id} freq={self.frequency_sec}")

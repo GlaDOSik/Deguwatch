@@ -1,6 +1,4 @@
-import os
 import time
-from datetime import datetime
 from uuid import UUID
 
 import cv2
@@ -42,12 +40,13 @@ def device_preview(device_id):
     _, buffer = cv2.imencode(".jpg", image)
     return Response(buffer.tobytes(), mimetype="image/jpeg")
 
-@content_api.route('/shot-livestream/<camera_shot_id>')
-def livestream(camera_shot_id):
-    return Response(gen_frames(camera_shot_id),
+@content_api.route('/shot-livestream/<params>')
+def livestream(params: str):
+    split_params = params.split("$")
+    return Response(gen_frames(split_params[0], int(split_params[1])),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
-def gen_frames(camera_shot_id: UUID):
+def gen_frames(camera_shot_id: str, target_fps: int):
     transaction_session = DBSession()
 
     camera_shot = find_camera_shot_by_id(transaction_session, camera_shot_id)
@@ -64,4 +63,4 @@ def gen_frames(camera_shot_id: UUID):
             # Yield as a multipart response
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-            time.sleep(1)
+            time.sleep(1/target_fps)

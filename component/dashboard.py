@@ -11,5 +11,6 @@ class Dashboard(GuiComponent):
     def get_template_path(self) -> str:
         return "dashboard.html"
 
-    def set_camera_shots(self, shots: List[CameraShot]):
+    def set_camera_shots(self, shots: List[CameraShot], images: {}):
         self.component_data["camera_shots"] = shots
+        self.component_data["images"] = images

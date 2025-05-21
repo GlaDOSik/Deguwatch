@@ -9,6 +9,7 @@ from dbe import camera_shot
 from component.factory.dw_components import AVAILABLE_CAMERAS_ID
 from vial.gui.component.common.root_component import Root
 from vial.gui.component.component_factory import ComponentRegistry
+from dbe.image import find_newest as find_newest_image
 
 dashboard_blueprint = Blueprint("dashboard", __name__, url_prefix="/dashboard")
 
@@ -20,8 +21,12 @@ def get_dashboard():
     transaction_session = getattr(g, "transaction_session", None)
     camera_shots = camera_shot.get_all(transaction_session)
 
+    images = {}
+    for shot in camera_shots:
+        images[shot.id] = find_newest_image(transaction_session, shot.id)
+
     dashboard = Dashboard(DASHBOARD_ID)
-    dashboard.set_camera_shots(camera_shots)
+    dashboard.set_camera_shots(camera_shots, images)
 
     root = (Root(None)
             .add_content(dashboard)

@@ -5,13 +5,16 @@
             <div class="text-sm font-medium mb-2">Záběr {{camera_shot.name}}</div>
             <div class="flex gap-1 px-1">
                 <i class="bi bi-camera-reels-fill icon" onclick="openLivestream('{{camera_shot.id}}');"></i>
-                <i class="bi bi-image icon" onclick="openImageView('{{camera_shot.get_first_image().id}}');"></i>
+                {% if data.images[camera_shot.id] %}
+                <i class="bi bi-image icon" onclick="openImageView('{{data.images[camera_shot.id].id}}');"></i>
+                {% endif %}
                 <i class="bi bi-images icon"></i>
                 <i class="bi bi-pencil-fill icon"></i>
             </div>
         </div>
-        <img src="{{ url_for('api.content.camera_preview', camera_id=camera_shot.id) }}"
-        alt="Camera shot with name {{camera_shot.name}}"/>
+        <img id="video" src="{{ url_for('api.content.livestream', params=camera_shot.id|string+'$05') }}">
+<!--        <img src="{{ url_for('api.content.camera_preview', camera_id=camera_shot.id) }}"-->
+<!--        alt="Camera shot with name {{camera_shot.name}}"/>-->
     </div>
 {% endfor %}
 </div>
