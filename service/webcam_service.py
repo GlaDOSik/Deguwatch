@@ -23,8 +23,8 @@ def initialize_cameras(max_test=10):
                 continue
         cap.release()
 
-def get_frame(camera_shot: CameraShot):
-    frame = physical_cameras.get(camera_shot.device_id).get_frame()
+def get_frame(camera_shot: CameraShot, target_period_sec: float):
+    frame = physical_cameras.get(camera_shot.device_id).get_frame(target_period_sec)
     cv2.putText(
         frame,
         camera_shot.name,

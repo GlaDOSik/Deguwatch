@@ -23,7 +23,7 @@ def camera_preview(camera_id):
     transaction_session = getattr(g, "transaction_session", None)
 
     camera_shot = find_camera_shot_by_id(transaction_session, camera_id)
-    image = webcam_service.get_frame(camera_shot)
+    image = webcam_service.get_frame(camera_shot, 1)
     if image is None:
         return Response(status=404)
 
@@ -33,7 +33,7 @@ def camera_preview(camera_id):
 @content_api.route("/preview/device/<device_id>", methods=["GET"])
 def device_preview(device_id):
     shared_camera = webcam_service.get_shared_camera(int(device_id))
-    image = shared_camera.get_frame()
+    image = shared_camera.get_frame(1)
     if image is None:
         return Response(status=404)
 
@@ -52,7 +52,7 @@ def gen_frames(camera_shot_id: str, target_fps: int):
     camera_shot = find_camera_shot_by_id(transaction_session, camera_shot_id)
     transaction_session.close()
     while True:
-        frame = webcam_service.get_frame(camera_shot)
+        frame = webcam_service.get_frame(camera_shot, 1/target_fps)
         if frame is None:
             break
         else:

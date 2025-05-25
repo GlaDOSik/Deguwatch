@@ -31,7 +31,7 @@ class SaveShotTask:
         image.timestamp = datetime.now()
         transaction_session.add(image)
 
-        frame = webcam_service.get_frame(camera_shot)
+        frame = webcam_service.get_frame(camera_shot, camera_shot.shot_frequency_sec)
         image_path = app_config.get(IMAGE_PATH)
         cv2.imwrite(image_path + "/" + str(image.id) + ".jpg", frame)
 
