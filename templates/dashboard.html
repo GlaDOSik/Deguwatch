@@ -12,7 +12,7 @@
                 <i class="bi bi-pencil-fill icon"></i>
             </div>
         </div>
-        <img id="video" src="{{ url_for('api.content.livestream', params=camera_shot.id|string+'$05') }}">
+        <img id="video" src="{{ url_for('api.content.livestream', camera_shot_id=camera_shot.id|string) }}?x=640&p=0">
 <!--        <img src="{{ url_for('api.content.camera_preview', camera_id=camera_shot.id) }}"-->
 <!--        alt="Camera shot with name {{camera_shot.name}}"/>-->
     </div>

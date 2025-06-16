@@ -8,7 +8,7 @@ from database import DBSession
 from dbe.camera_shot import find_by_id as find_camera_shot_by_id
 from dbe.image import Image
 from dw_configuration import IMAGE_PATH
-from service import webcam_service
+from service.webcam_service import webcam_service
 from vial.config import app_config
 
 
@@ -31,7 +31,7 @@ class SaveShotTask:
         image.timestamp = datetime.now()
         transaction_session.add(image)
 
-        frame = webcam_service.get_frame(camera_shot, camera_shot.shot_frequency_sec)
+        frame = webcam_service.get_frame(camera_shot)
         image_path = app_config.get(IMAGE_PATH)
         cv2.imwrite(image_path + "/" + str(image.id) + ".jpg", frame)
 

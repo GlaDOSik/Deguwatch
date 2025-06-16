@@ -9,7 +9,8 @@ from endpoint.api.entity_api import entity_api
 from endpoint.page.dashboard_blueprint import dashboard_blueprint
 from endpoint.page.shot_blueprint import shot_blueprint
 from vial.blueprint.web_callback import web_callback_blueprint
-from service import webcam_service, task_service
+from service import task_service
+from service.webcam_service import webcam_service
 
 logger = logging.getLogger()
 
@@ -17,6 +18,7 @@ logger = logging.getLogger()
 def create_app():
     webcam_service.initialize_cameras()
     task_service.initialize_tasks()
+    webcam_service.start_updates()
     app = Flask(__name__, template_folder="templates")
 
     @app.before_request

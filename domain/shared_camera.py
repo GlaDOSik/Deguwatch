@@ -1,39 +1,54 @@
 import threading
 import time
 
-MIN_PERIOD = 1
-COOLDOWN_SEC = 2
-COOLDOWN_DECREASE_SEC = 0.0333 * 5
+import cv2
+import numpy as np
 
 class SharedCamera:
-    def __init__(self, video_capture):
-        self.cap = video_capture
-        self.frame = None
-        self.lock = threading.Lock()
-        self.running = True
-        self.last_minute_frame = int(time.time())
-        self.curr_period = 1
-        self.thread = threading.Thread(target=self._update, daemon=True)
+    def __init__(self, device_id):
+        self.device_id = device_id
+        self.frame = generate_static_frame()
+        self.thread = None
+        self.is_priority = False
+        self.capture = None
+        self.last_captured = 0
+
+    def update(self):
+        cap = cv2.VideoCapture(self.device_id)
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 10000)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 10000)
+        ret, frame = cap.read()
+        if ret:
+            self.frame = frame
+        cap.release()
+
+    def set_priority(self):
+        self.is_priority = True
+        self.capture = cv2.VideoCapture(self.device_id)
+        self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, 10000)
+        self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 10000)
+        self.thread = threading.Thread(target=self._update_internal, daemon=True)
         self.thread.start()
 
-    def _update(self):
-        while self.running:
-            if int(time.time()) - self.last_minute_frame > COOLDOWN_SEC:
-                self.last_minute_frame = int(time.time())
-                print(f"Cooldown {self.curr_period}")
-                self.curr_period = min(self.curr_period + COOLDOWN_DECREASE_SEC, MIN_PERIOD)
-            ret, frame = self.cap.read()
+    def remove_priority(self):
+        self.is_priority = False
+        if self.thread is not None:
+            self.thread.join()
+        self.thread = None
+        if self.capture is not None:
+            self.capture.release()
+        self.capture = None
+
+    def _update_internal(self):
+        while self.is_priority:
+            ret, frame = self.capture.read()
             if ret:
-                with self.lock:
-                    self.frame = frame
-            time.sleep(self.curr_period)  # Prevent CPU overuse
+                self.frame = frame
+            time.sleep(1/15)
 
-    def get_frame(self, target_period_sec: float):
-        with self.lock:
-            self.curr_period = min(target_period_sec, self.curr_period)
-            return self.frame.copy() if self.frame is not None else None
+    def get_frame(self):
+        return self.frame.copy() if self.frame is not None else None
 
-    def stop(self):
-        self.running = False
-        self.thread.join()
-        self.cap.release()
+def generate_static_frame(width=640, height=480):
+    background_color = (0, 0, 255)  # BGR format
+    return np.full((height, width, 3), background_color, dtype=np.uint8)

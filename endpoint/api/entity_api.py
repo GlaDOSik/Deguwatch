@@ -22,13 +22,13 @@ def create_camera_shot():
     if save_frequency in ("", "0", None):
         save_frequency = None
     else:
-        save_frequency = int(save_frequency)
+        save_frequency = int(save_frequency) * 60
 
     camera_shot = CameraShot()
     camera_shot.id = uuid4()
     camera_shot.name = shot_name
     camera_shot.device_id = int(device_id)
-    camera_shot.shot_frequency_sec = save_frequency * 60
+    camera_shot.shot_frequency_sec = save_frequency
     camera_shot.insert_timestamp = timestamp
 
     task_service.create_task(camera_shot)

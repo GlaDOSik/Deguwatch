@@ -7,3 +7,4 @@ gunicorn==23.0.0
 opencv-python==4.11.0.86
 cachetools==5.5.2
 APScheduler==3.11.0
+gevent==25.5.1

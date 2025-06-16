@@ -1,12 +1,11 @@
 import time
-from uuid import UUID
 
 import cv2
-from flask import Blueprint, Response, g, send_file
+from flask import Blueprint, Response, g, send_file, request
 
 from database import DBSession
 from dw_configuration import IMAGE_PATH
-from service import webcam_service
+from service.webcam_service import webcam_service
 from dbe.camera_shot import find_by_id as find_camera_shot_by_id
 from vial.config import app_config
 
@@ -23,44 +22,56 @@ def camera_preview(camera_id):
     transaction_session = getattr(g, "transaction_session", None)
 
     camera_shot = find_camera_shot_by_id(transaction_session, camera_id)
-    image = webcam_service.get_frame(camera_shot, 1)
+    image = webcam_service.get_frame(camera_shot)
     if image is None:
         return Response(status=404)
 
-    _, buffer = cv2.imencode(".jpg", image)
+    _, buffer = cv2.imencode(".jpg", image, [int(cv2.IMWRITE_JPEG_OPTIMIZE), 1])
     return Response(buffer.tobytes(), mimetype="image/jpeg")
 
 @content_api.route("/preview/device/<device_id>", methods=["GET"])
 def device_preview(device_id):
     shared_camera = webcam_service.get_shared_camera(int(device_id))
-    image = shared_camera.get_frame(1)
+    image = shared_camera.get_frame()
     if image is None:
         return Response(status=404)
 
     _, buffer = cv2.imencode(".jpg", image)
     return Response(buffer.tobytes(), mimetype="image/jpeg")
 
-@content_api.route('/shot-livestream/<params>')
-def livestream(params: str):
-    split_params = params.split("$")
-    return Response(gen_frames(split_params[0], int(split_params[1])),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
+@content_api.route("/shot-livestream/<camera_shot_id>")
+def livestream(camera_shot_id):
+    priority = 0 if request.args.get("p") is None else int(request.args.get("p"))
+    width = None if request.args.get("x") is None else int(request.args.get("x"))
 
-def gen_frames(camera_shot_id: str, target_fps: int):
+    return Response(gen_frames(camera_shot_id, priority, width),
+                    mimetype="multipart/x-mixed-replace; boundary=frame")
+
+def gen_frames(camera_shot_id: str, priority, width: int):
     transaction_session = DBSession()
 
     camera_shot = find_camera_shot_by_id(transaction_session, camera_shot_id)
     transaction_session.close()
+    if priority == 1:
+        webcam_service.set_priority_device(camera_shot)
     while True:
-        frame = webcam_service.get_frame(camera_shot, 1/target_fps)
+        if priority == 1:
+            webcam_service.set_last_priority_captured(camera_shot)
+        frame = webcam_service.get_frame(camera_shot)
         if frame is None:
             break
         else:
             # Encode frame as JPEG
+            if width is not None:
+                h, w = frame.shape[:2]
+                aspect_ratio = h / w
+                new_height = int(width * aspect_ratio)
+                frame = cv2.resize(frame, (width, new_height))
+
             ret, buffer = cv2.imencode(".jpg", frame)
             frame = buffer.tobytes()
 
             # Yield as a multipart response
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-            time.sleep(1/target_fps)
+            time.sleep(1/15 if priority == 1 else 1.0)
